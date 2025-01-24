@@ -1,0 +1,24 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "App",
+            "request": "launch",
+            "mainClass": "App",
+            "projectName": ""
+        },
+        {
+            "type": "java",
+            "name": "Debug (Launch) - WebCrawl",
+            "request": "launch",
+            "mainClass": "App",
+            "projectName": "",
+            "args": [
+                "https://example.com/default",
+                "5"
+            ]
+        }
+    ]
+  }
+  
