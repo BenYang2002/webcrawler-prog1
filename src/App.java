@@ -59,10 +59,8 @@ public class App {
     public static String findNextHref(String response, int index)
     {
         String regex = "<a[^>]*?href=\"([^\"]+)\"";
-        
         // Compile the pattern
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-        
         // Create a matcher to find matches in the HTML string
         Matcher matcher = pattern.matcher(response);
         
@@ -73,6 +71,18 @@ public class App {
             if (matcher.find())
             {
                 url = matcher.group(1);
+                while (!url.contains("http"))
+                {
+                    if (matcher.find())
+                    {
+                        url = matcher.group(1);
+                    }
+                    else
+                    {
+                        url = new String("notFound");
+                        break;
+                    }
+                }
             }
             else 
             {
@@ -81,6 +91,44 @@ public class App {
         }
         System.out.println("Extracted URL: " + url);  
         return url;
+    }
+
+    private static String sendHttpGETRequest(String url) throws IOException {
+        URL obj = new URL(url);
+        HttpURLConnection httpURLConnection = (HttpURLConnection) obj.openConnection();
+        try
+        {
+            httpURLConnection.setRequestMethod("GET");
+            int responseCode = httpURLConnection.getResponseCode();
+            System.out.println("GET Response Code :: " + responseCode);
+            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == 301) { // success
+                System.out.println("successfully get response");
+                BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
+                String inputLine;
+                StringBuffer response = new StringBuffer();
+    
+                while ((inputLine = in .readLine()) != null) 
+                {
+                    response.append(inputLine);
+                } 
+                in .close();
+                String responseString = response.toString();
+                return responseString;
+            } else {
+                if(responseCode == 404) 
+                {
+                    System.out.println("The requested page does not exist");
+                    return new String("invalid webpage");
+                }
+                System.out.println("GET request is not valid");
+                return new String("invalid webpage");
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.println("Unexpected error: " + e.toString());
+            return new String("invalid webpage");
+        }
     }
 
     public static String[] parseURL(String url)
@@ -125,30 +173,5 @@ public class App {
         String path = hostAndpath[1];
         String getReq = new String("GET " + path + " HTTP/1.1\nHost: " + host);
         return getReq;
-    }
-
-    private static String sendHttpGETRequest(String url) throws IOException {
-        URL obj = new URL(url);
-        HttpURLConnection httpURLConnection = (HttpURLConnection) obj.openConnection();
-        httpURLConnection.setRequestMethod("GET");
-        int responseCode = httpURLConnection.getResponseCode();
-        System.out.println("GET Response Code :: " + responseCode);
-        if (responseCode == HttpURLConnection.HTTP_OK) { // success
-            System.out.println("successfully get response");
-            BufferedReader in = new BufferedReader(new InputStreamReader(httpURLConnection.getInputStream()));
-            String inputLine;
-            StringBuffer response = new StringBuffer();
-
-            while ((inputLine = in .readLine()) != null) 
-            {
-                response.append(inputLine);
-            } 
-            in .close();
-            String responseString = response.toString();
-            return responseString;
-        } else {
-            System.out.println("GET request is not valid");
-            return new String("invalid webpage");
-        }
     }
 }
